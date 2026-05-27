@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Property Portfolio — HomeFinder{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-20">
+  
+  <div class="mb-12">
+    <div class="flex items-center gap-2 mb-3">
+      <div class="w-8 h-[1px] bg-gold"></div>
+      <p class="text-[10px] uppercase tracking-[0.3em] font-semibold text-gold">Extensive Portfolio</p>
+    </div>
+    <h1 class="font-display text-4xl md:text-5xl font-semibold">Properties</h1>
+  </div>
+
+  <div class="glass rounded-2xl p-6 lg:p-8 mb-12 shadow-2xl relative overflow-hidden border border-gold/20">
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold-dark via-gold to-gold-light opacity-30"></div>
+    
+    <form method="GET" action="{{ url_for('properties') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 items-end relative z-10">
+
+      <div class="lg:col-span-2 space-y-1.5">
+        <label class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold ml-1">Category</label>
+        <div class="relative">
+          <select name="category" class="hf-input w-full rounded-xl px-4 py-3 text-sm appearance-none cursor-pointer pr-10">
+            <option value="" {% if not filters.category %}selected{% endif %}>All Types</option>
+            {% for cat in ['residential', 'commercial', 'rental'] %}
+            <option value="{{ cat }}" {% if filters.get('category') == cat %}selected{% endif %}>{{ cat|capitalize }}</option>
+            {% endfor %}
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gold">▼</div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-3 space-y-1.5">
+        <label class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold ml-1">Location</label>
+        <input type="text" name="location" value="{{ filters.get('location', '') }}"
+               placeholder="Search by city (Athens), area (Glyfada), or region..."
+               class="hf-input w-full rounded-xl px-4 py-3 text-sm" />
+      </div>
+
+      <div class="lg:col-span-2 space-y-1.5">
+        <label class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold ml-1">Min Price (€)</label>
+        <input type="number" name="min_price" value="{{ filters.get('min_price', '') }}"
+               placeholder="0" class="hf-input w-full rounded-xl px-4 py-3 text-sm" />
+      </div>
+
+      <div class="lg:col-span-2 space-y-1.5">
+        <label class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold ml-1">Max Price (€)</label>
+        <input type="number" name="max_price" value="{{ filters.get('max_price', '') }}"
+               placeholder="No Limit" class="hf-input w-full rounded-xl px-4 py-3 text-sm" />
+      </div>
+
+      <div class="lg:col-span-1 space-y-1.5">
+        <label class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold ml-1">Beds</label>
+        <div class="relative">
+          <select name="min_bedrooms" class="hf-input w-full rounded-xl px-4 py-3 text-sm appearance-none cursor-pointer pr-8">
+            <option value="" {% if not filters.get('min_bedrooms') %}selected{% endif %}>Any</option>
+            {% for n in [1, 2, 3, 4, 5] %}
+            <option value="{{ n }}" {% if filters.get('min_bedrooms')|int == n %}selected{% endif %}>{{ n }}+</option>
+            {% endfor %}
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gold">▼</div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-2 flex gap-3 h-[46px]">
+        <button type="submit" class="flex-1 bg-gold text-obsidian rounded-xl text-sm font-bold tracking-wide hover:bg-gold-light hover:shadow-[0_0_20px_rgba(201,168,76,0.3)] transition-all duration-300">
+          Apply
+        </button>
+        <a href="/properties" class="flex items-center justify-center aspect-square border border-white/10 text-gray-400 rounded-xl hover:border-gold/50 hover:text-gold transition-all duration-300 bg-white/5" title="Clear Filters">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
+    <p class="text-sm font-medium text-gray-400">
+      Showing <span class="text-gold font-bold">{{ properties | length }}</span> propert{{ 'y' if properties | length == 1 else 'ies' }}
+    </p>
+  </div>
+
+  {% if properties %}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% for prop in properties %}
+    <div class="prop-card glass rounded-2xl overflow-hidden flex flex-col h-full bg-obsidian group{% if not prop.is_available %} opacity-75{% endif %}">
+      
+      <div class="h-56 flex items-center justify-center relative overflow-hidden bg-obsidian-800">
+        <div class="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-transparent z-10 opacity-90"></div>
+        
+        {% if prop.thumbnail and not prop.use_placeholder %}
+          <img src="{{ url_for('static', filename='uploads/properties/' + prop.thumbnail) }}" alt="{{ prop.title }}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+        {% elif prop.thumbnail == 'no-image-available.jpg' %}
+          <img src="{{ url_for('static', filename='no-image-available.jpg') }}" alt="No image available" class="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-700" />
+        {% else %}
+          <div class="absolute inset-0 opacity-20 group-hover:scale-110 transition-transform duration-700 ease-in-out bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-700 via-obsidian to-obsidian"></div>
+          <span class="text-6xl opacity-30 z-0 transform group-hover:scale-110 transition-transform duration-500">
+            {% if prop.category == 'Commercial' %}🏢{% elif prop.category == 'Rental' %}🔑{% else %}🏠{% endif %}
+          </span>
+        {% endif %}
+        
+        <div class="absolute top-4 left-4 z-20">
+          <span class="text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md font-bold badge-{{ prop.category | lower }}">
+            {{ prop.category }}
+          </span>
+        </div>
+        <div class="absolute top-4 right-4 z-20">
+          <span class="text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md font-bold shadow-lg backdrop-blur-md border border-white/10"
+                style="background:rgba(10,10,10,0.75); color:{% if prop.is_available %}#4ade80{% else %}#f87171{% endif %}">
+            <span class="inline-block w-1.5 h-1.5 rounded-full mr-1 {% if prop.is_available %}bg-[#4ade80]{% else %}bg-[#f87171]{% endif %}"></span>
+            {% if prop.is_available %}Available{% else %}Unavailable{% endif %}
+          </span>
+        </div>
+      </div>
+
+      <div class="p-6 flex flex-col flex-1 relative z-20 -mt-4 rounded-t-2xl bg-obsidian border-t border-white/5">
+        <h2 class="font-display text-xl font-semibold leading-snug mb-2 group-hover:text-gold transition-colors line-clamp-1">{{ prop.title }}</h2>
+        <p class="flex items-center gap-1.5 text-sm text-gray-400 mb-4 font-light">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          {{ prop.location }}
+        </p>
+        
+        {% if prop.description %}
+        <p class="text-sm text-gray-500 leading-relaxed mb-6 flex-1 line-clamp-3">{{ prop.description }}</p>
+        {% endif %}
+
+        <div class="flex flex-wrap gap-2 text-xs text-gray-300 mb-6">
+          {% if prop.bedrooms %}
+            <span class="bg-white/5 px-2.5 py-1.5 rounded-md border border-white/5 flex items-center gap-1.5">🛏 <span>{{ prop.bedrooms }} Bed</span></span>
+          {% endif %}
+          {% if prop.area_sqm %}
+            <span class="bg-white/5 px-2.5 py-1.5 rounded-md border border-white/5 flex items-center gap-1.5">📐 <span>{{ prop.area_sqm }} m²</span></span>
+          {% endif %}
+          {% if prop.has_garden %}
+            <span class="bg-white/5 px-2.5 py-1.5 rounded-md border border-white/5 flex items-center gap-1.5">🌿 <span>Garden</span></span>
+          {% endif %}
+          {% if prop.has_parking %}
+            <span class="bg-white/5 px-2.5 py-1.5 rounded-md border border-white/5 flex items-center gap-1.5">🅿 <span>Parking</span></span>
+          {% endif %}
+          {% if prop.office_spaces %}
+            <span class="bg-white/5 px-2.5 py-1.5 rounded-md border border-white/5 flex items-center gap-1.5">🏢 <span>{{ prop.office_spaces }} Offices</span></span>
+          {% endif %}
+          {% if prop.lease_duration_months %}
+            <span class="bg-white/5 px-2.5 py-1.5 rounded-md border border-white/5 flex items-center gap-1.5">📅 <span>{{ prop.lease_duration_months }}mo Lease</span></span>
+          {% endif %}
+        </div>
+
+        <div class="flex items-center justify-between pt-5 border-t border-gold/10 mt-auto">
+          <div>
+            <span class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1">Price</span>
+            <span class="text-gold font-bold text-2xl font-mono tracking-tight">
+              €{{ "{:,.0f}".format(prop.price) }}
+              {% if prop.category == 'Rental' %}<span class="text-sm text-gray-500 font-sans font-normal">/mo</span>{% endif %}
+            </span>
+          </div>
+          <a href="{{ url_for('property_detail', pid=prop.id) }}"
+             class="flex items-center justify-center w-10 h-10 rounded-full {% if prop.is_available %}bg-gold/10 text-gold hover:bg-gold hover:text-obsidian border border-gold/20 hover:border-gold{% else %}bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20{% endif %} transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="glass max-w-2xl mx-auto text-center py-24 px-6 rounded-3xl border border-white/5 shadow-2xl">
+    <div class="w-20 h-20 mx-auto bg-obsidian-800 rounded-full flex items-center justify-center mb-6 border border-white/10 shadow-inner">
+      <span class="text-3xl opacity-50">🔍</span>
+    </div>
+    <h3 class="font-display text-3xl font-semibold text-white mb-3">No Properties Found</h3>
+    <p class="text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">
+      We couldn't find any listings matching your specific criteria in our current portfolio. Try adjusting your filters or expanding your search area.
+    </p>
+    <a href="/properties" class="inline-flex items-center justify-center px-6 py-3 rounded-lg text-sm font-medium border border-gold/30 text-gold hover:bg-gold/10 transition-colors">
+      Clear Search Filters
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

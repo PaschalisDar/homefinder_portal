@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Schedule Viewing — {{ prop.title }}{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-16">
+  <div class="mb-10 text-center">
+    <p class="text-xs uppercase tracking-[0.3em] text-gold mb-2">Viewing Calendar</p>
+    <h1 class="font-display text-4xl mb-4">Schedule a Viewing</h1>
+    <p class="text-gray-500">Select an available time slot for <strong>{{ prop.title }}</strong></p>
+  </div>
+
+  <div class="glass rounded-2xl p-8">
+    <form method="POST" action="{{ url_for('schedule_viewing', pid=prop.id) }}">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <!-- Property Info Summary -->
+        <div class="space-y-4">
+          <div class="rounded-xl overflow-hidden h-40 bg-obsidian/50 flex items-center justify-center">
+             <span class="text-5xl opacity-10">🏠</span>
+          </div>
+          <div>
+            <h3 class="font-display text-xl">{{ prop.title }}</h3>
+            <p class="text-xs text-gray-500 mt-1">📍 {{ prop.location }}</p>
+            <p class="text-xs text-gold mt-1">€{{ "{:,.0f}".format(prop.price) }}</p>
+          </div>
+        </div>
+
+        <!-- Slot Selection -->
+        <div class="space-y-4">
+          <label class="text-xs text-gray-600 uppercase tracking-wider block mb-2">Available Slots</label>
+          <div class="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+            {% for slot in slots %}
+            <label class="relative block cursor-pointer group">
+              <input type="radio" name="scheduled_at" value="{{ slot }}" required class="peer sr-only" />
+              <div class="p-3 border border-gold/10 rounded-xl text-sm text-gray-400 group-hover:border-gold/30 transition-all peer-checked:border-gold peer-checked:text-gold peer-checked:bg-gold/5">
+                📅 {{ slot }}
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <label class="text-xs text-gray-600 uppercase tracking-wider block mb-2">Additional Notes (Optional)</label>
+        <textarea name="notes" rows="3" placeholder="Any specific requirements or questions for the agent?"
+                  class="hf-input w-full rounded-xl px-4 py-3 text-sm"></textarea>
+      </div>
+
+      <div class="mt-8 flex gap-4">
+        <a href="/properties/{{ prop.id }}" class="flex-1 border border-gold/20 text-gray-400 py-3.5 rounded-xl text-sm font-semibold text-center hover:bg-white/5 transition-colors">
+          Cancel
+        </a>
+        <button type="submit" class="flex-[2] bg-gold text-obsidian py-3.5 rounded-xl text-sm font-semibold hover:bg-gold-light transition-colors">
+          Confirm Schedule
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <p class="text-center text-[10px] text-gray-600 mt-8 uppercase tracking-[0.2em]">
+    Optimistic Locking enabled to prevent double bookings
+  </p>
+</div>
+{% endblock %}

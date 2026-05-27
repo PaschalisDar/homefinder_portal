@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}HomeFinder Portal{% endblock %}</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold:     { DEFAULT: '#C9A84C', light: '#E2C97E', dark: '#9C7B2B' },
+            obsidian: { DEFAULT: '#0A0A0A', 900: '#111111', 800: '#1A1A1A', 700: '#242424', 600: '#2E2E2E' },
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            body:    ['"DM Sans"', 'sans-serif'],
+            mono:    ['"DM Mono"', 'monospace'],
+          },
+          animation: {
+            'fade-in-down': 'fadeInDown 0.5s ease-out',
+          },
+          keyframes: {
+            fadeInDown: {
+              '0%': { opacity: '0', transform: 'translateY(-10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Base ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    body { background: #0A0A0A; color: #E8E2D9; font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+
+    /* ── Gold gradient text ──────────────────────────────────────────── */
+    .text-gold-gradient {
+      background: linear-gradient(135deg, #E2C97E 0%, #C9A84C 50%, #9C7B2B 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Glass card (Refined) ────────────────────────────────────────── */
+    .glass {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+      border: 1px solid rgba(201, 168, 76, 0.15);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    /* ── Property card lift ──────────────────────────────────────────── */
+    .prop-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .prop-card:hover {
+      transform: translateY(-8px) scale(1.01);
+      box-shadow: 0 30px 60px rgba(201, 168, 76, 0.08), 0 0 0 1px rgba(201, 168, 76, 0.3);
+      border-color: rgba(201, 168, 76, 0.4);
+    }
+
+    /* ── Nav link underline ──────────────────────────────────────────── */
+    .nav-link { position: relative; padding-bottom: 4px; }
+    .nav-link::after {
+      content: '';
+      position: absolute; bottom: 0; left: 50%;
+      width: 0; height: 1px; background: #C9A84C;
+      transition: all 0.3s ease;
+      transform: translateX(-50%);
+    }
+    .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+    /* ── Form inputs ─────────────────────────────────────────────────── */
+    .hf-input {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #E8E2D9;
+      transition: all 0.3s ease;
+    }
+    .hf-input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.05);
+      border-color: #C9A84C;
+      box-shadow: 0 0 15px rgba(201,168,76,0.15);
+    }
+    .hf-input::placeholder { color: #6b7280; }
+    select.hf-input option { background: #111; color: #E8E2D9; }
+
+    /* ── Category badges (Refined) ───────────────────────────────────── */
+    .badge-residential { background:rgba(34,197,94,.1);  color:#4ade80; border:1px solid rgba(34,197,94,.3); }
+    .badge-commercial  { background:rgba(59,130,246,.1); color:#60a5fa; border:1px solid rgba(59,130,246,.3); }
+    .badge-rental      { background:rgba(168,85,247,.1); color:#c084fc; border:1px solid rgba(168,85,247,.3); }
+
+    /* ── Status badges ───────────────────────────────────────────────── */
+    .status-available { background:rgba(34,197,94,.15);  color:#4ade80; border:1px solid rgba(34,197,94,.3); }
+    .status-unavail   { background:rgba(239,68,68,.15);  color:#f87171; border:1px solid rgba(239,68,68,.3); }
+    .status-pending   { background:rgba(234,179,8,.15);  color:#fbbf24; border:1px solid rgba(234,179,8,.3); }
+
+    /* ── Flash alerts ────────────────────────────────────────────────── */
+    .alert-success { background: linear-gradient(to right, rgba(34,197,94,.1), rgba(0,0,0,0)); border-left: 4px solid #4ade80; color:#e2e8f0; }
+    .alert-danger  { background: linear-gradient(to right, rgba(239,68,68,.1), rgba(0,0,0,0)); border-left: 4px solid #f87171; color:#e2e8f0; }
+    .alert-info    { background: linear-gradient(to right, rgba(59,130,246,.1), rgba(0,0,0,0)); border-left: 4px solid #60a5fa; color:#e2e8f0; }
+    .alert-warning { background: linear-gradient(to right, rgba(234,179,8,.1), rgba(0,0,0,0)); border-left: 4px solid #fbbf24; color:#e2e8f0; }
+
+    /* ── Scrollbar ───────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0A0A0A; }
+    ::-webkit-scrollbar-thumb { background: rgba(201,168,76,.4); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(201,168,76,.8); }
+
+    /* ── Divider ─────────────────────────────────────────────────────── */
+    .gold-divider { border-color: rgba(201,168,76,.15); }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col relative selection:bg-gold/30 selection:text-gold-light">
+
+  <nav class="fixed top-0 inset-x-0 z-50 transition-all duration-300"
+       style="background: linear-gradient(to bottom, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.7) 100%); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(201, 168, 76, 0.1);">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+
+      <a href="/" class="flex items-center gap-3 shrink-0 group">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-500 group-hover:rotate-12 shadow-lg shadow-gold/20"
+             style="background:linear-gradient(135deg, #E2C97E, #9C7B2B);">
+          <span class="text-obsidian font-display font-bold text-lg leading-none">H</span>
+        </div>
+        <span class="font-display text-2xl tracking-wide text-gold-gradient font-semibold">HomeFinder</span>
+      </a>
+
+      <div class="hidden md:flex items-center gap-8">
+        <a href="{{ url_for('properties') }}" class="nav-link text-sm font-medium text-gray-300 hover:text-gold transition-colors">Properties</a>
+        {% if role == 'admin' %}
+          <a href="{{ url_for('admin_property_new') }}" class="nav-link text-sm font-medium text-gray-300 hover:text-gold transition-colors">Add Listing</a>
+          <a href="{{ url_for('admin_inquiries') }}"    class="nav-link text-sm font-medium text-gray-300 hover:text-gold transition-colors">Inquiries</a>
+        {% endif %}
+        {% if role == 'supervisor' %}
+          <a href="{{ url_for('supervisor_reports') }}" class="nav-link text-sm font-medium text-gray-300 hover:text-gold transition-colors">Reports</a>
+        {% endif %}
+      </div>
+
+      <div class="flex items-center gap-5">
+        {% if user %}
+          <a href="{{ url_for('dashboard') }}" class="nav-link text-sm font-medium text-gray-300 hover:text-gold transition-colors hidden sm:block">Dashboard</a>
+          <!-- Notification bell dropdown -->
+          {% set _initial_notifs = notifs|default([]) %}
+          <div id="hf-bell-wrapper" class="relative" style="z-index:60;">
+
+            <!-- Bell button -->
+            <button id="hf-bell-btn"
+                    type="button"
+                    aria-label="Notifications"
+                    aria-expanded="false"
+                    class="relative text-gray-400 hover:text-gold transition-colors focus:outline-none">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span id="hf-bell-badge"
+                    class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-gold text-obsidian text-[9px] font-bold flex items-center justify-center leading-none
+                           {% if _initial_notifs|length == 0 %}hidden{% endif %}">
+                {{ _initial_notifs|length if _initial_notifs|length < 10 else '9+' }}
+              </span>
+            </button>
+
+            <!-- Dropdown panel -->
+            <div id="hf-bell-panel"
+                 class="hidden absolute right-0 mt-3 w-80 glass rounded-2xl shadow-2xl border border-gold/20 overflow-hidden"
+                 style="top:100%;">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-gold/10">
+                <p class="text-xs uppercase tracking-[0.2em] font-semibold text-gold">Notifications</p>
+                <span id="hf-bell-count-label" class="text-[10px] text-gray-600"></span>
+              </div>
+              <ul id="hf-bell-list" class="max-h-72 overflow-y-auto divide-y divide-gold/5">
+                <!-- populated by JS from inline data then live updates -->
+              </ul>
+              <div class="px-4 py-3 border-t border-gold/10 text-center">
+                <a href="{{ url_for('dashboard') }}"
+                   class="text-xs text-gold hover:text-gold-light transition-colors">
+                  View Dashboard →
+                </a>
+              </div>
+            </div>
+          </div>
+          <a href="{{ url_for('logout') }}"
+             class="text-sm border border-gold/40 text-gold px-5 py-2 rounded-lg font-medium
+                    hover:bg-gold hover:text-obsidian hover:shadow-[0_0_15px_rgba(201,168,76,0.4)] transition-all duration-300">
+            Logout
+          </a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="nav-link text-sm font-medium text-gray-300 hover:text-gold transition-colors">Login</a>
+          <a href="{{ url_for('register') }}" class="text-sm bg-gold text-obsidian px-6 py-2 rounded-lg font-semibold
+                                     hover:bg-gold-light hover:shadow-[0_0_20px_rgba(201,168,76,0.3)] hover:-translate-y-0.5 transition-all duration-300">
+            Register
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="fixed top-24 right-6 z-50 flex flex-col gap-3 w-80 md:w-96">
+      {% for category, msg in messages %}
+      <div class="alert-{{ category }} glass rounded-lg px-5 py-4 text-sm flex items-start gap-3 shadow-2xl animate-fade-in-down backdrop-blur-md">
+        <span class="shrink-0 mt-0.5 text-lg">
+          {% if category == 'success' %}✨{% elif category == 'danger' %}🛑{% elif category == 'info' %}ℹ️{% else %}⚠️{% endif %}
+        </span>
+        <span class="leading-relaxed font-medium">{{ msg }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <main class="pt-20 flex-grow relative z-10">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t gold-divider mt-24 relative z-10 bg-obsidian-900/50 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-12 gap-10">
+      <div class="md:col-span-5">
+        <span class="font-display text-3xl text-gold-gradient font-semibold block mb-4">HomeFinder</span>
+        <p class="text-sm text-gray-400 leading-relaxed max-w-sm">
+          Greece's premier portal for exclusive residential, commercial, and rental properties. Discover spaces that inspire.
+        </p>
+      </div>
+      <div class="md:col-span-3">
+        <p class="text-xs uppercase tracking-[0.2em] font-semibold text-gold mb-6">Navigation</p>
+        <div class="flex flex-col gap-3 text-sm text-gray-400">
+          <a href="/properties" class="hover:text-gold transition-colors inline-block w-fit">Properties</a>
+          {% if not user or role not in ('admin', 'supervisor') %}
+          <a href="/register"   class="hover:text-gold transition-colors inline-block w-fit">Create Account</a>
+          <a href="/login"      class="hover:text-gold transition-colors inline-block w-fit">Client Login</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="md:col-span-4">
+        <p class="text-xs uppercase tracking-[0.2em] font-semibold text-gold mb-6">Enterprise Security</p>
+        <p class="text-xs text-gray-500 leading-relaxed mb-4 border-l border-gold/20 pl-3">
+          Fully GDPR compliant. All PII secured via AES-256 encryption. strictly enforcing Single-Session integrity and TOTP 2FA.
+        </p>
+        <p class="text-xs text-gray-600 font-mono">5CM505 Software Engineering — © 2026</p>
+      </div>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+
+  {% if user %}
+  <script>
+  (function () {
+    /* ── Inline seed data from Jinja ─────────────────────────────────── */
+    var SEED_NOTIFS = [];
+
+    /* ── DOM refs ────────────────────────────────────────────────────── */
+    var btn    = document.getElementById('hf-bell-btn');
+    var panel  = document.getElementById('hf-bell-panel');
+    var badge  = document.getElementById('hf-bell-badge');
+    var list   = document.getElementById('hf-bell-list');
+    var label  = document.getElementById('hf-bell-count-label');
+
+    if (!btn) return;   // not logged-in page; do nothing
+
+    /* ── Helpers ─────────────────────────────────────────────────────── */
+    function setBadge(n) {
+      if (n > 0) {
+        badge.textContent = n < 10 ? n : '9+';
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function renderList(notifs) {
+      list.innerHTML = '';
+      if (!notifs || notifs.length === 0) {
+        list.innerHTML =
+          '<li class="px-4 py-6 text-center text-xs text-gray-600">No unread notifications.</li>';
+        label.textContent = '';
+        return;
+      }
+      label.textContent = notifs.length + ' unread';
+      notifs.forEach(function (n) {
+        var li = document.createElement('li');
+        li.className = 'px-4 py-3 hover:bg-white/5 transition-colors';
+        var ts = '';
+        if (n.created_at) {
+          var d = new Date(n.created_at);
+          if (!isNaN(d)) {
+            ts = d.toLocaleDateString('en-GB', {day:'2-digit', month:'short'});
+          }
+        }
+        li.innerHTML =
+          '<p class="text-xs font-semibold text-gray-300 mb-0.5">' + escHtml(n.title || '') + '</p>' +
+          '<p class="text-[11px] text-gray-500 leading-relaxed">' + escHtml(n.message || '') + '</p>' +
+          (ts ? '<p class="text-[10px] text-gray-700 mt-1">' + ts + '</p>' : '');
+        list.appendChild(li);
+      });
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ── Poll unread count every 5 s ─────────────────────────────────── */
+    function refreshCount() {
+      fetch('{{ url_for("notifications_unread_count") }}', {credentials: 'same-origin'})
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) { if (data) setBadge(data.count); })
+        .catch(function () {});
+    }
+    refreshCount();                    // sync badge immediately on page load
+    setInterval(refreshCount, 5000);   // then keep it live every 5 seconds
+
+    /* ── Open/close toggle ───────────────────────────────────────────── */
+    var isOpen = false;
+
+    function openPanel() {
+      isOpen = true;
+      panel.classList.remove('hidden');
+      btn.setAttribute('aria-expanded', 'true');
+      fetch('{{ url_for("notifications_list") }}', {credentials: 'same-origin'})
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(data){ renderList(data); })
+        .catch(function(){ renderList(SEED_NOTIFS); });
+
+      /* Mark as read via POST, then clear badge and seed */
+      fetch('{{ url_for("notifications_mark_read") }}', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {'Content-Type': 'application/json'}
+      })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          if (data && data.ok) {
+            setBadge(0);
+            SEED_NOTIFS = [];   /* already seen; don't re-show on next open */
+          }
+        })
+        .catch(function () {});
+    }
+
+    function closePanel() {
+      isOpen = false;
+      panel.classList.add('hidden');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      isOpen ? closePanel() : openPanel();
+    });
+
+    /* Close when clicking outside */
+    document.addEventListener('click', function (e) {
+      if (isOpen && !panel.contains(e.target) && e.target !== btn) {
+        closePanel();
+      }
+    });
+
+    /* Close on Escape */
+    document.addEventListener('keydown', function (e) {
+      if (isOpen && e.key === 'Escape') closePanel();
+    });
+
+  })();
+  </script>
+  {% endif %}
+</body>
+</html>

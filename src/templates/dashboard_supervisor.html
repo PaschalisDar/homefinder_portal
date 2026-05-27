@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Supervisor Dashboard — HomeFinder{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-16">
+  <div class="mb-10">
+    <p class="text-xs uppercase tracking-[0.3em] text-gold mb-2">Customer Service Supervisor</p>
+    <h1 class="font-display text-4xl">Monthly Analytics</h1>
+  </div>
+
+  <!-- KPI cards -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
+    {% set kpis = [
+      ('Total Logins',    report.total_logins,    '🔑', 'text-blue-400'),
+      ('Searches',        report.total_searches,  '🔍', 'text-gold'),
+      ('Viewings',        report.total_viewings,  '📅', 'text-purple-400'),
+      ('Inquiries',       report.total_inquiries, '💬', 'text-yellow-400'),
+      ('Revenue €',       report.total_revenue,   '💰', 'text-green-400'),
+    ] %}
+    {% for label, val, icon, color in kpis %}
+    <div class="glass rounded-xl p-5 text-center">
+      <p class="text-xl mb-1">{{ icon }}</p>
+      <p class="font-display text-2xl {{ color }}">
+        {% if label == 'Revenue €' %}€{{ "{:,.0f}".format(val) }}{% else %}{{ val }}{% endif %}
+      </p>
+      <p class="text-xs text-gray-600 mt-1">{{ label }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-8">
+    <!-- Properties by category -->
+    <div class="glass rounded-xl p-6">
+      <p class="text-xs uppercase tracking-wider text-gray-600 mb-5">Listings by Category</p>
+      {% for cat, count in report.properties_by_category.items() %}
+      <div class="mb-4">
+        <div class="flex justify-between text-sm mb-1.5">
+          <span class="text-gray-400">{{ cat }}</span>
+          <span class="text-gold font-mono">{{ count }}</span>
+        </div>
+        <div class="h-2 rounded-full" style="background:rgba(255,255,255,0.05);">
+          <div class="h-2 rounded-full" style="background:linear-gradient(90deg,#C9A84C,#9C7B2B); width:{{ [count / [report.total_properties, 1] | max * 100, 100] | min }}%;"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Recent activity log -->
+    <div class="glass rounded-xl p-6">
+      <p class="text-xs uppercase tracking-wider text-gray-600 mb-5">Recent Activity</p>
+      <div class="space-y-4 max-h-72 overflow-y-auto">
+        {% for log in report.recent_logs[:15] %}
+        <div class="border-b border-white/5 pb-2">
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-[10px] text-gray-600 uppercase tracking-tighter">{{ log.created_at[:16] if log.created_at else '' }}</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gold uppercase tracking-widest">{{ log.action }}</span>
+          </div>
+          <p class="text-[11px] text-gray-400">{{ log.detail }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

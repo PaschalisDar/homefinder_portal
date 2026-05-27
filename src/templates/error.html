@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }} — HomeFinder{% endblock %}
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-6">
+  <div class="text-center max-w-lg">
+    <p class="font-display text-9xl text-gold/20 mb-4">{{ code }}</p>
+
+    {% if code == 503 %}
+      <h1 class="font-display text-3xl mb-3">Scheduled Maintenance</h1>
+      <p class="text-gray-400 text-sm mb-6 leading-relaxed">
+        {{ message }}
+      </p>
+      <div class="glass rounded-xl p-5 mb-8 flex items-start gap-3 border border-gold/20">
+        <span class="text-gold text-xl shrink-0">🔧</span>
+        <p class="text-xs text-gray-500 leading-relaxed text-left">
+          HomeFinder performs weekly 30-minute maintenance windows to ensure platform integrity and security updates (NFR-05).
+          Our team is working to restore full service as quickly as possible.
+        </p>
+      </div>
+    {% elif code == 404 %}
+      <h1 class="font-display text-3xl mb-3">Page Not Found</h1>
+      <p class="text-gray-400 text-sm mb-8 leading-relaxed">{{ message }}</p>
+    {% elif code == 403 %}
+      <h1 class="font-display text-3xl mb-3">Access Denied</h1>
+      <p class="text-gray-400 text-sm mb-8 leading-relaxed">{{ message }}</p>
+    {% else %}
+      <h1 class="font-display text-3xl mb-3">Something Went Wrong</h1>
+      <p class="text-gray-400 text-sm mb-8 leading-relaxed">{{ message }}</p>
+    {% endif %}
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="{{ url_for('index') }}"
+         class="inline-block bg-gold text-obsidian px-6 py-3 rounded-lg text-sm font-semibold hover:bg-gold-light transition-colors">
+        Return Home
+      </a>
+      {% if code != 503 %}
+      <a href="{{ url_for('properties') }}"
+         class="inline-block border border-gold/30 text-gold px-6 py-3 rounded-lg text-sm font-medium hover:bg-gold/10 transition-colors">
+        Browse Properties
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

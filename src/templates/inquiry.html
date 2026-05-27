@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Submit Inquiry — HomeFinder{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto px-6 py-16">
+  <a href="/properties/{{ prop.id }}" class="text-sm text-gray-600 hover:text-gold transition-colors">← Back to property</a>
+  <div class="mt-8 mb-8">
+    <p class="text-xs uppercase tracking-[0.3em] text-gold mb-2">Get in Touch</p>
+    <h1 class="font-display text-3xl">Submit Inquiry</h1>
+    <p class="text-gray-500 text-sm mt-2">{{ prop.title }}, {{ prop.location }}</p>
+  </div>
+  <div class="glass rounded-2xl p-8">
+    <form method="POST" action="{{ url_for('inquiry', pid=prop.id) }}" class="flex flex-col gap-5">
+      <div>
+        <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Your Message</label>
+        <textarea name="message" required rows="5" minlength="10"
+                  class="hf-input w-full rounded-lg px-4 py-3 text-sm resize-none"
+                  placeholder="Ask about the property, arrange a call, or request more details…"></textarea>
+        <p class="text-xs text-gray-600 mt-1">Minimum 10 characters. A confirmation email will be sent to you.</p>
+      </div>
+      <button type="submit" class="bg-gold text-obsidian w-full py-3.5 rounded-lg font-semibold text-sm hover:bg-gold-light transition-colors">
+        💬 Send Inquiry
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

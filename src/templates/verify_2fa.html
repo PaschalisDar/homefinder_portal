@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Verify Identity — HomeFinder{% endblock %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-10">
+      <div class="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center text-2xl" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);">
+        🔐
+      </div>
+      <p class="text-xs uppercase tracking-[0.3em] text-gold mb-3">Two-Factor Authentication</p>
+      <h1 class="font-display text-3xl mb-3">Verify Your Identity</h1>
+      <p class="text-gray-500 text-sm leading-relaxed">
+        A 6-digit verification code has been sent to your registered email.<br/>
+        <span class="text-gold text-xs" id="expiry-msg">Delivered within 30 seconds · Expires in <span id="countdown">90</span>s</span>
+      </p>
+    </div>
+
+    <div class="glass rounded-2xl p-8">
+      <form method="POST" action="{{ url_for('verify_2fa') }}" class="flex flex-col gap-6">
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-3">Verification Code</label>
+          <!-- OTP digit inputs -->
+          <div class="flex gap-3 justify-center" id="otp-container">
+            {% for i in range(6) %}
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"
+                   class="hf-input w-12 h-14 text-center text-xl font-mono rounded-lg otp-digit"
+                   autocomplete="off" />
+            {% endfor %}
+          </div>
+          <input type="hidden" name="otp" id="otp-hidden" />
+        </div>
+
+        <button type="submit" id="verify-btn"
+                class="bg-gold text-obsidian w-full py-3.5 rounded-lg font-semibold text-sm tracking-wide hover:bg-gold-light transition-colors opacity-50"
+                disabled>
+          Verify & Sign In
+        </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <a href="/login" class="text-sm text-gray-600 hover:text-gold transition-colors">← Back to login</a>
+      </div>
+
+      <div class="mt-5 flex items-center justify-center gap-2 text-xs text-gray-700">
+        <span>⚡</span>
+        <span>NFR-01 compliant: token delivered within 30 seconds</span>
+      </div>
+    </div>
+
+    <!-- Dev helper -->
+    <p class="text-center text-xs text-gray-700 mt-4">
+      💡 In development mode, the OTP code is printed to the server console.
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const digits  = document.querySelectorAll('.otp-digit');
+  const hidden  = document.getElementById('otp-hidden');
+  const btn     = document.getElementById('verify-btn');
+
+  function updateHidden() {
+    const code = Array.from(digits).map(d => d.value).join('');
+    hidden.value = code;
+    btn.disabled  = code.length !== 6;
+    btn.classList.toggle('opacity-50', code.length !== 6);
+  }
+
+  digits.forEach((d, i) => {
+    d.addEventListener('input', e => {
+      // Allow only digits
+      d.value = d.value.replace(/\D/g, '');
+      if (d.value && i < 5) digits[i+1].focus();
+      updateHidden();
+    });
+    d.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !d.value && i > 0) digits[i-1].focus();
+    });
+    d.addEventListener('paste', e => {
+      e.preventDefault();
+      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
+      paste.split('').forEach((ch, j) => { if (digits[j]) digits[j].value = ch; });
+      if (digits[paste.length - 1]) digits[Math.min(paste.length, 5)].focus();
+      updateHidden();
+    });
+  });
+
+  // Auto-focus first digit
+  digits[0].focus();
+
+  // Countdown timer (90 s = PRE_AUTH_TTL)
+  let remaining = 90;
+  const countEl = document.getElementById('countdown');
+  const expiryMsg = document.getElementById('expiry-msg');
+  const timer = setInterval(() => {
+    remaining -= 1;
+    if (countEl) countEl.textContent = remaining;
+    if (remaining <= 0) {
+      clearInterval(timer);
+      if (expiryMsg) expiryMsg.textContent = 'Code expired — please log in again.';
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+    }
+  }, 1000);
+
+  // Ensure the hidden field is populated before submit
+  document.querySelector('form').addEventListener('submit', e => {
+    const code = Array.from(digits).map(d => d.value).join('');
+    if (code.length !== 6) {
+      e.preventDefault();
+      return;
+    }
+    hidden.value = code;
+  });
+</script>
+{% endblock %}

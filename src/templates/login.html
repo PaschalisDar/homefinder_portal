@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Login — HomeFinder{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4 py-20">
+  <div class="w-full max-w-md">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <div class="w-14 h-14 rounded-full mx-auto mb-5 flex items-center justify-center text-xl"
+           style="background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);">🔑</div>
+      <p class="text-xs uppercase tracking-[0.3em] text-gold mb-3">Secure Access</p>
+      <h1 class="font-display text-4xl mb-3">Welcome Back</h1>
+      <p class="text-gray-500 text-sm">Sign in with email + password, then verify via 2FA code</p>
+    </div>
+
+    <!-- Form card -->
+    <div class="glass rounded-2xl p-8">
+      <form method="POST" action="{{ url_for('login') }}" class="flex flex-col gap-5">
+
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Username</label>
+          <input type="text" name="username" required autocomplete="username"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm"
+                 placeholder="your username" />
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Password</label>
+          <input type="password" name="password" required autocomplete="current-password"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm"
+                 placeholder="••••••••" />
+        </div>
+
+        <button type="submit"
+                class="mt-1 bg-gold text-obsidian w-full py-3.5 rounded-lg font-semibold text-sm
+                       tracking-wide hover:bg-gold-light transition-colors">
+          Sign In → Get Verification Code
+        </button>
+      </form>
+
+      <div class="mt-6 pt-5 border-t gold-divider text-center">
+        <p class="text-sm text-gray-600">
+          No account? <a href="/register" class="text-gold hover:text-gold-light transition-colors">Register here</a>
+        </p>
+      </div>
+
+      <!-- Security note -->
+      <div class="mt-5 flex items-center justify-center gap-2 text-xs text-gray-700">
+        <span>🔒</span>
+        <span>2FA required · Rate limited · AES-256 PII encrypted</span>
+      </div>
+    </div>
+
+    <!-- Demo credentials panel -->
+    <div class="mt-6 glass rounded-xl p-5">
+      <p class="text-xs uppercase tracking-wider text-gray-600 mb-3">Demo Credentials</p>
+      <div class="flex flex-col gap-2 text-xs font-mono">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600">User:</span>
+          <span class="text-gray-400">user / User9012!</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600">Admin:</span>
+          <span class="text-gray-400">admin / Admin1234!</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600">Supervisor:</span>
+          <span class="text-gray-400">supervisor / Super5678!</span>
+        </div>
+      </div>
+      <p class="text-xs text-yellow-700 mt-3 flex items-center gap-1.5">
+        <span>⚠</span>
+        <span>After login, check the <strong>server console</strong> for the 6-digit OTP code.</span>
+      </p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

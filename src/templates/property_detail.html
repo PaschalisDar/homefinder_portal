@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}{{ prop.title }} — HomeFinder{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-16">
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm text-gray-600 mb-8">
+    <a href="/properties" class="hover:text-gold transition-colors">Properties</a>
+    <span>/</span>
+    <span class="text-gray-400">{{ prop.title }}</span>
+  </div>
+
+  <div class="grid lg:grid-cols-5 gap-10">
+    <!-- Main content -->
+    <div class="lg:col-span-3">
+      <!-- Gallery -->
+      {% if prop.images %}
+      <div class="space-y-4 mb-8">
+        <div class="rounded-xl overflow-hidden h-96 relative group">
+          <img id="mainImage" src="/static/uploads/properties/{{ prop.images[0].image_path }}" 
+               class="w-full h-full object-cover transition-transform duration-500" />
+          <span class="absolute top-4 left-4 text-sm px-3 py-1 rounded-full font-medium badge-{{ prop.category | lower }}">
+            {{ prop.category }}
+          </span>
+        </div>
+        
+        {% if prop.images|length > 1 %}
+        <div class="grid grid-cols-4 gap-3">
+          {% for img in prop.images %}
+          <div class="cursor-pointer rounded-lg overflow-hidden h-20 border-2 border-transparent hover:border-gold transition-all"
+               onclick="document.getElementById('mainImage').src='/static/uploads/properties/{{ img.image_path }}'">
+            <img src="/static/uploads/properties/{{ img.image_path }}" class="w-full h-full object-cover" />
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="rounded-xl overflow-hidden h-72 mb-6 flex items-center justify-center relative bg-obsidian-800 border border-white/5">
+        <img src="{{ url_for('static', filename='no-image-available.jpg') }}" class="absolute inset-0 w-full h-full object-cover opacity-20" />
+        <span class="text-7xl opacity-10 relative z-10">
+          {% if prop.category == 'Commercial' %}🏢{% elif prop.category == 'Rental' %}🔑{% else %}🏠{% endif %}
+        </span>
+        <span class="absolute top-4 left-4 text-sm px-3 py-1 rounded-full font-medium badge-{{ prop.category | lower }} z-20">
+          {{ prop.category }}
+        </span>
+      </div>
+      {% endif %}
+
+      <!-- Title + price -->
+      <h1 class="font-display text-3xl mb-2">{{ prop.title }}</h1>
+      <p class="text-gray-400 mb-4">📍 {{ prop.location }}</p>
+
+      <!-- Price + tax info -->
+      <div class="glass rounded-xl p-5 mb-6 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-600 uppercase tracking-wider mb-1">Listed Price</p>
+          <p class="font-mono text-3xl text-gold">€{{ "{:,.0f}".format(prop.price) }}
+            {% if prop.category == 'Rental' %}<span class="text-sm text-gray-500">/mo</span>{% endif %}
+          </p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs text-gray-600 uppercase tracking-wider mb-1">Est. Tax ({{ prop.category }})</p>
+          <p class="font-mono text-xl text-gray-400">€{{ "{:,.2f}".format(prop.tax_amount or 0) }}</p>
+          <p class="text-xs text-gray-700 mt-0.5">Strategy Pattern applied</p>
+        </div>
+      </div>
+
+      <!-- Description -->
+      {% if prop.description %}
+      <div class="mb-6">
+        <p class="text-xs uppercase tracking-wider text-gray-600 mb-3">Description</p>
+        <p class="text-sm text-gray-400 leading-relaxed">{{ prop.description }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Features -->
+      <div class="glass rounded-xl p-5 mb-6">
+        <p class="text-xs uppercase tracking-wider text-gray-600 mb-4">Property Features</p>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          {% if prop.bedrooms %}
+          <div class="flex items-center gap-2 text-gray-400"><span>🛏</span> {{ prop.bedrooms }} Bedrooms</div>
+          {% endif %}
+          {% if prop.area_sqm %}
+          <div class="flex items-center gap-2 text-gray-400"><span>📐</span> {{ prop.area_sqm }} m² Area</div>
+          {% endif %}
+          {% if prop.has_garden is not none %}
+          <div class="flex items-center gap-2 text-gray-400"><span>🌿</span> Garden: {{ 'Yes' if prop.has_garden else 'No' }}</div>
+          {% endif %}
+          {% if prop.has_parking is not none %}
+          <div class="flex items-center gap-2 text-gray-400"><span>🅿</span> Parking: {{ 'Yes' if prop.has_parking else 'No' }}</div>
+          {% endif %}
+          {% if prop.office_spaces %}
+          <div class="flex items-center gap-2 text-gray-400"><span>🏢</span> {{ prop.office_spaces }} Office Spaces</div>
+          {% endif %}
+          {% if prop.lease_duration_months %}
+          <div class="flex items-center gap-2 text-gray-400"><span>📅</span> {{ prop.lease_duration_months }}-month lease</div>
+          {% endif %}
+          {% if prop.security_deposit %}
+          <div class="flex items-center gap-2 text-gray-400"><span>💰</span> Deposit: €{{ "{:,.0f}".format(prop.security_deposit) }}</div>
+          {% endif %}
+          <div class="flex items-center gap-2 {% if prop.status == 'Available' %}text-green-400{% else %}text-red-400{% endif %}">
+            <span>●</span> {{ prop.status }}
+          </div>
+        </div>
+      </div>
+
+      {% if prop.amenities %}
+      <div class="mb-6">
+        <p class="text-xs uppercase tracking-wider text-gray-600 mb-3">Amenities</p>
+        <p class="text-sm text-gray-400">{{ prop.amenities }}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar actions -->
+    <div class="lg:col-span-2 space-y-4">
+      {% if user and role == 'user' %}
+
+        <!-- Favourite toggle -->
+        {% if is_fav %}
+        <form method="POST" action="{{ url_for('remove_favorite', pid=prop.id) }}">
+          <button class="w-full border border-gold/30 text-gold py-3 rounded-xl text-sm hover:bg-gold/5 transition-all">
+            ♥ Remove from Favourites
+          </button>
+        </form>
+        {% else %}
+        <form method="POST" action="{{ url_for('add_favorite', pid=prop.id) }}">
+          <button class="w-full border border-gold/30 text-gold py-3 rounded-xl text-sm hover:bg-gold/5 transition-all">
+            ♡ Save to Favourites
+          </button>
+        </form>
+        {% endif %}
+
+        {% if prop.status == 'Available' %}
+          <!-- Schedule viewing -->
+          <a href="{{ url_for('schedule_viewing', pid=prop.id) }}"
+             class="block w-full bg-gold text-obsidian py-3 rounded-xl text-sm font-semibold text-center hover:bg-gold-light transition-colors">
+            📅 Schedule Viewing
+          </a>
+        {% endif %}
+
+        <!-- Submit inquiry (Always available for users) -->
+        <a href="{{ url_for('inquiry', pid=prop.id) }}"
+           class="block w-full glass border border-gold/20 text-gray-300 py-3 rounded-xl text-sm text-center hover:border-gold/40 transition-colors">
+          💬 Submit Inquiry
+        </a>
+
+        {% if prop.status == 'Available' %}
+          <!-- Payment -->
+          <a href="{{ url_for('payment', pid=prop.id) }}"
+             class="block w-full glass border border-green-500/20 text-green-400 py-3 rounded-xl text-sm text-center hover:border-green-500/40 transition-colors">
+            💳 Book / Pay
+          </a>
+        {% else %}
+          <!-- Subscription toggle (FR-08) — only on unavailable properties -->
+          {% if is_subscribed %}
+          <form method="POST" action="{{ url_for('unsubscribe_notifications', pid=prop.id) }}">
+            <button class="w-full glass border border-red-500/20 text-red-400 py-3 rounded-xl text-sm hover:border-red-500/40 transition-colors">
+              🔕 Unsubscribe from Alerts
+            </button>
+          </form>
+          {% else %}
+          <form method="POST" action="{{ url_for('subscribe_notifications', pid=prop.id) }}">
+            <button class="w-full glass border border-gold/20 text-gray-400 py-3 rounded-xl text-sm hover:border-gold/40 transition-colors">
+              🔔 Subscribe — Notify Me When Available
+            </button>
+          </form>
+          {% endif %}
+        {% endif %}
+
+      {% elif not user %}
+        <div class="glass rounded-xl p-5 text-center">
+          <p class="text-sm text-gray-500 mb-4">Log in to save, schedule viewings, and make inquiries.</p>
+          <a href="/login" class="block bg-gold text-obsidian py-2.5 rounded-lg text-sm font-semibold hover:bg-gold-light transition-colors">
+            Sign In
+          </a>
+        </div>
+      {% endif %}
+
+      <!-- Property metadata card -->
+      <div class="glass rounded-xl p-5 text-xs text-gray-600 space-y-2">
+        <p class="font-mono">ID: #{{ prop.id }}</p>
+        <p>Category: {{ prop.category }}</p>
+        <p>Listed: {{ prop.created_at[:10] if prop.created_at else 'N/A' }}</p>
+        <p class="text-gold/60">Tax calculated using {{ prop.category }}TaxStrategy</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

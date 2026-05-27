@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Inquiries — Admin{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-16">
+  <div class="mb-10 flex items-center justify-between">
+    <div>
+      <a href="/dashboard" class="text-xs uppercase tracking-wider text-gray-600 hover:text-gold transition-colors">← Back to Dashboard</a>
+      <h1 class="font-display text-4xl mt-2">Property Inquiries</h1>
+      <p class="text-gray-500 text-sm mt-2">Manage and respond to user questions about listings.</p>
+    </div>
+    <div class="glass px-4 py-2 rounded-lg border-gold/20">
+      <p class="text-[10px] text-gray-600 uppercase tracking-widest">Total Inquiries</p>
+      <p class="text-2xl font-display text-gold">{{ inquiries | length }}</p>
+    </div>
+  </div>
+
+  {% if inquiries %}
+  <div class="grid gap-6">
+    {% for inq in inquiries %}
+    <div class="glass rounded-2xl p-6 border-gold/10 hover:border-gold/30 transition-all">
+      <div class="flex flex-col md:flex-row justify-between gap-6">
+        <!-- Inquiry Content -->
+        <div class="flex-grow">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-xs px-2 py-0.5 rounded-full uppercase font-bold
+              {% if inq.status == 'open' %}bg-yellow-500/10 text-yellow-400 border border-yellow-500/20{% else %}bg-green-500/10 text-green-400 border border-green-500/20{% endif %}">
+              {{ inq.status }}
+            </span>
+            <span class="text-xs text-gray-600">Submitted on {{ inq.created_at[:10] if inq.created_at else 'N/A' }}</span>
+          </div>
+
+          <h3 class="font-display text-xl mb-1">{{ inq.property_title }}</h3>
+          <p class="text-xs text-gold mb-4">From: <span class="text-gray-300 font-medium">{{ inq.username }}</span></p>
+
+          <div class="bg-obsidian/50 rounded-xl p-5 border border-white/5 mb-6">
+            <p class="text-sm text-gray-400 leading-relaxed italic">"{{ inq.message }}"</p>
+          </div>
+
+          {% if inq.status == 'responded' %}
+          <div class="bg-gold/5 rounded-xl p-5 border border-gold/10">
+            <p class="text-xs text-gold uppercase tracking-wider font-semibold mb-2">Admin Response</p>
+            <p class="text-sm text-gray-300 leading-relaxed">{{ inq.response }}</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Response Form (if open) -->
+        {% if inq.status == 'open' %}
+        <div class="md:w-80 shrink-0">
+          <form method="POST" action="{{ url_for('admin_inquiries') }}" class="bg-white/2 rounded-xl p-5 border border-white/5">
+            <input type="hidden" name="inquiry_id" value="{{ inq.id }}" />
+            <label class="text-[10px] text-gray-600 uppercase tracking-widest block mb-3">Send Response</label>
+            <textarea name="response" required rows="4"
+                      class="hf-input w-full rounded-lg px-4 py-3 text-sm resize-none mb-4"
+                      placeholder="Type your reply here…"></textarea>
+            <button type="submit" class="w-full bg-gold text-obsidian py-2.5 rounded-lg text-xs font-bold hover:bg-gold-light transition-colors">
+              Submit Response
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass rounded-2xl p-20 text-center">
+    <div class="text-5xl mb-6 opacity-10">💬</div>
+    <p class="text-gray-500">No inquiries found in the system.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

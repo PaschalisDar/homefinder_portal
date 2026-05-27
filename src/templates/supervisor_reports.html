@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Reports — HomeFinder{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-16">
+  <div class="mb-10">
+    <p class="text-xs uppercase tracking-[0.3em] text-gold mb-2">FR-09 — Monthly Analytics</p>
+    <h1 class="font-display text-4xl">Supervisor Reports</h1>
+    <p class="text-gray-500 text-sm mt-2">Search trends, inquiry volumes, and user activity overview.</p>
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
+    <div class="glass rounded-xl p-5 text-center">
+      <p class="font-display text-3xl text-blue-400">{{ report.total_logins }}</p>
+      <p class="text-xs text-gray-600 mt-1">🔑 Total Logins</p>
+    </div>
+    <div class="glass rounded-xl p-5 text-center">
+      <p class="font-display text-3xl text-gold">{{ report.total_searches }}</p>
+      <p class="text-xs text-gray-600 mt-1">🔍 Searches</p>
+    </div>
+    <div class="glass rounded-xl p-5 text-center">
+      <p class="font-display text-3xl text-purple-400">{{ report.total_viewings }}</p>
+      <p class="text-xs text-gray-600 mt-1">📅 Viewings</p>
+    </div>
+    <div class="glass rounded-xl p-5 text-center">
+      <p class="font-display text-3xl text-yellow-400">{{ report.total_inquiries }}</p>
+      <p class="text-xs text-gray-600 mt-1">💬 Inquiries</p>
+    </div>
+    <div class="glass rounded-xl p-5 text-center">
+      <p class="font-display text-2xl text-green-400">€{{ "{:,.0f}".format(report.total_revenue) }}</p>
+      <p class="text-xs text-gray-600 mt-1">💰 Revenue</p>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-8">
+    <!-- Category breakdown -->
+    <div class="glass rounded-xl p-6">
+      <p class="text-xs uppercase tracking-wider text-gray-600 mb-5">Listings by Category</p>
+      <div class="space-y-4">
+        {% for cat, count in report.properties_by_category.items() %}
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-gray-400">{{ cat }}</span>
+            <span class="text-gold font-mono">{{ count }} / {{ report.total_properties }}</span>
+          </div>
+          <div class="h-2 bg-white/5 rounded-full">
+            <div class="h-2 rounded-full bg-gradient-to-r from-gold to-gold-dark"
+                 style="width: {{ (count / [report.total_properties, 1]|max * 100)|round(1) }}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Audit log -->
+    <div class="glass rounded-xl p-6">
+      <p class="text-xs uppercase tracking-wider text-gray-600 mb-5">Audit Log (this month)</p>
+      <div class="space-y-1.5 max-h-[600px] overflow-y-auto pr-2">
+        {% for log in report.recent_logs %}
+        <div class="flex items-center gap-3 text-xs">
+          <span class="text-gray-700 font-mono shrink-0 w-32">{{ log.created_at[:16] }}</span>
+          <span class="text-gold/70 shrink-0 w-28">{{ log.action }}</span>
+          <span class="text-gray-600 truncate">{{ log.detail }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

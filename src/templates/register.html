@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Register — HomeFinder{% endblock %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4 py-20">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-10">
+      <p class="text-xs uppercase tracking-[0.3em] text-gold mb-3">Join HomeFinder</p>
+      <h1 class="font-display text-4xl mb-3">Create Account</h1>
+      <p class="text-gray-500 text-sm">Register to browse and save properties</p>
+    </div>
+
+    <div class="glass rounded-2xl p-8">
+      <form method="POST" action="{{ url_for('register') }}" class="flex flex-col gap-5">
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Username</label>
+          <input type="text" name="username" required
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm"
+                 placeholder="johndoe"
+                 value="{{ form_data.username if form_data else '' }}" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Full Name</label>
+          <input type="text" name="full_name"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm"
+                 placeholder="John Doe"
+                 value="{{ form_data.full_name if form_data else '' }}" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Email Address</label>
+          <input type="email" name="email" required autocomplete="email"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm"
+                 placeholder="your@email.com"
+                 value="{{ form_data.email if form_data else '' }}" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Password <span class="text-gray-700">(min. 8 characters)</span></label>
+          <input type="password" name="password" required minlength="8"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm"
+                 placeholder="••••••••" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Confirm Password</label>
+          <input type="password" name="confirm_password" required
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm"
+                 placeholder="••••••••" />
+        </div>
+
+        <!-- GDPR consent — NFR-03 -->
+        <label class="flex items-start gap-3 cursor-pointer mt-1">
+          <input type="checkbox" name="gdpr_consent" required class="mt-1 accent-gold"
+                 {{ 'checked' if form_data and form_data.gdpr_consent else '' }} />
+          <span class="text-xs text-gray-500 leading-relaxed">
+            I agree to the collection of only essential personal data in accordance with
+            <span class="text-gold">GDPR</span> principles. My email and data will be encrypted with AES-256.
+          </span>
+        </label>
+
+        <button type="submit" class="mt-2 bg-gold text-obsidian w-full py-3.5 rounded-lg font-semibold text-sm tracking-wide hover:bg-gold-light transition-colors">
+          Create Account
+        </button>
+      </form>
+
+      <div class="mt-6 pt-6 border-t border-gold/10 text-center">
+        <p class="text-sm text-gray-600">
+          Already have an account? <a href="/login" class="text-gold hover:text-gold-light">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

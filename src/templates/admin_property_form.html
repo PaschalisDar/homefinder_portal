@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}{% if prop %}Edit{% else %}New{% endif %} Property — HomeFinder{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-6 py-16">
+  <div class="mb-8">
+    <a href="/dashboard" class="text-sm text-gray-600 hover:text-gold transition-colors">← Dashboard</a>
+    <h1 class="font-display text-3xl mt-4">{% if prop %}Edit Property{% else %}New Property Listing{% endif %}</h1>
+  </div>
+
+  <div class="glass rounded-2xl p-8">
+    <form method="POST"
+          action="{% if prop %}{{ url_for('admin_property_edit', pid=prop.id) }}{% else %}{{ url_for('admin_property_new') }}{% endif %}"
+          enctype="multipart/form-data" class="flex flex-col gap-5">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-2">
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Title *</label>
+          <input type="text" name="title" required value="{{ prop.title if prop else '' }}"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm" placeholder="e.g. Kensington Garden Flat" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Category *</label>
+          <select id="categorySelect" name="category" required class="hf-input w-full rounded-lg px-4 py-3 text-sm">
+            <option value="residential" {% if prop and prop.category == 'residential' %}selected{% endif %}>Residential</option>
+            <option value="commercial" {% if prop and prop.category == 'commercial' %}selected{% endif %}>Commercial</option>
+            <option value="rental" {% if prop and prop.category == 'rental' %}selected{% endif %}>Rental</option>
+          </select>
+          <input type="hidden" id="typeInput" name="type" value="{{ prop.category if prop else 'residential' }}" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Status</label>
+          <select name="status" class="hf-input w-full rounded-lg px-4 py-3 text-sm">
+            {% for s in ['Available', 'Unavailable', 'Sold'] %}
+            <option value="{{ s }}" {% if prop and prop.status == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Price (€) *</label>
+          <input type="number" step="0.01" name="price" required value="{{ prop.price if prop else '' }}"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm" placeholder="350000" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Location *</label>
+          <input type="text" name="location" required value="{{ prop.location if prop else '' }}"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm" placeholder="Athens, Kifissia" />
+        </div>
+        <div id="officeSpacesField" style="display:none;">
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Office Spaces</label>
+          <input type="number" name="office_spaces" id="officeSpacesInput" value="{{ prop.office_spaces if prop and prop.office_spaces else '' }}"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm" placeholder="e.g. 12" min="0" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Bedrooms</label>
+          <input type="number" name="bedrooms" value="{{ prop.bedrooms if prop else '' }}"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm" placeholder="3" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Bathrooms</label>
+          <input type="number" name="bathrooms" value="{{ prop.bathrooms if prop else '' }}"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm" placeholder="2" />
+        </div>
+        <div class="col-span-2">
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Description</label>
+          <textarea name="description" rows="3" class="hf-input w-full rounded-lg px-4 py-3 text-sm resize-none"
+                    placeholder="Describe the property…">{{ prop.description if prop else '' }}</textarea>
+        </div>
+        <div class="col-span-2">
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Area (m²)</label>
+          <input type="number" step="0.1" name="area_sqm" value="{{ prop.area_sqm if prop else '' }}"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm" placeholder="120.5" />
+        </div>
+        
+        <div class="col-span-2">
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Upload Images (Multiple)</label>
+          <input type="file" name="property_images" multiple accept="image/*"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm" />
+          <p class="text-[10px] text-gray-600 mt-1">Allowed formats: JPG, PNG, WebP. Maximum 5MB per file.</p>
+        </div>
+
+        {% if prop and prop.images %}
+        <div class="col-span-2 mt-4">
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Existing Images (Select to delete)</label>
+          <div class="grid grid-cols-4 gap-3">
+            {% for img in prop.images %}
+            <div class="relative group">
+              <img src="/static/uploads/properties/{{ img.image_path }}" 
+                   class="w-full h-20 object-cover rounded-lg border border-white/10" />
+              <label class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full cursor-pointer hover:bg-red-600 transition-colors">
+                <input type="checkbox" name="delete_images" value="{{ img.id }}" class="hidden" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        <div class="flex items-center gap-3">
+          <input type="checkbox" name="has_garden" id="has_garden" {% if prop and prop.has_garden %}checked{% endif %} class="accent-gold" />
+          <label for="has_garden" class="text-sm text-gray-400">Has Garden</label>
+        </div>
+        <div class="flex items-center gap-3">
+          <input type="checkbox" name="has_parking" id="has_parking" {% if prop and prop.has_parking %}checked{% endif %} class="accent-gold" />
+          <label for="has_parking" class="text-sm text-gray-400">Has Parking</label>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Lease Duration (months)</label>
+          <input type="number" name="lease_duration_months" value="{{ prop.lease_duration_months if prop else '' }}"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm" placeholder="Rental only" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Security Deposit (€)</label>
+          <input type="number" step="0.01" name="security_deposit" value="{{ prop.security_deposit if prop else '' }}"
+                 class="hf-input w-full rounded-lg px-4 py-3 text-sm" placeholder="Rental only" />
+        </div>
+      </div>
+
+      <button type="submit" class="mt-4 bg-gold text-obsidian w-full py-3.5 rounded-lg font-semibold text-sm hover:bg-gold-light transition-colors">
+        {% if prop %}Update Property{% else %}Create Listing{% endif %}
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  (function () {
+    var select      = document.getElementById('categorySelect');
+    var typeInput   = document.getElementById('typeInput');
+    var officeField = document.getElementById('officeSpacesField');
+
+    function syncCategory() {
+      var val = select.value;
+      typeInput.value = val;
+      officeField.style.display = (val === 'commercial') ? '' : 'none';
+    }
+
+    select.addEventListener('change', syncCategory);
+    syncCategory();
+  })();
+</script>
+{% endblock %}

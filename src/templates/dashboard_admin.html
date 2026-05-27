@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — HomeFinder{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-16">
+  <div class="flex items-center justify-between mb-10">
+    <div>
+      <p class="text-xs uppercase tracking-[0.3em] text-gold mb-2">Administrator</p>
+      <h1 class="font-display text-4xl">Property Management</h1>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/admin/users"
+         class="glass rounded-lg px-4 py-2.5 text-sm text-gray-400 hover:text-gold border border-gold/10 hover:border-gold/30 transition-all flex items-center gap-2">
+        👥 Users
+      </a>
+      <a href="/admin/properties/new"
+         class="bg-gold text-obsidian px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gold-light transition-colors">
+        + Add Listing
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
+    {% set cats = {'residential': 0, 'commercial': 0, 'rental': 0} %}
+{% for p in properties %}{% set cat_lower = p.category | lower %}{% if cat_lower in cats %}{% set _ = cats.update({cat_lower: cats[cat_lower] + 1}) %}{% endif %}{% endfor %}
+    <div class="glass rounded-xl p-5">
+      <p class="font-display text-3xl text-gold">{{ properties | length }}</p>
+      <p class="text-xs text-gray-600 mt-1">Total Listings</p>
+    </div>
+    <div class="glass rounded-xl p-5">
+      <p class="font-display text-3xl text-green-400">{{ properties | selectattr('status', 'equalto', 'Available') | list | length }}</p>
+      <p class="text-xs text-gray-600 mt-1">Available</p>
+    </div>
+    <div class="glass rounded-xl p-5">
+      <p class="font-display text-3xl text-blue-400">{{ cats['residential'] }}</p>
+      <p class="text-xs text-gray-600 mt-1">Residential</p>
+    </div>
+    <div class="glass rounded-xl p-5">
+      <p class="font-display text-3xl text-purple-400">{{ cats['commercial'] + cats['rental'] }}</p>
+      <p class="text-xs text-gray-600 mt-1">Comm. + Rental</p>
+    </div>
+    <div class="glass rounded-xl p-5">
+      <p class="font-display text-3xl text-orange-400">{{ users | length if users else '—' }}</p>
+      <p class="text-xs text-gray-600 mt-1">Total Users</p>
+    </div>
+    <div class="glass rounded-xl p-5">
+      <p class="font-display text-3xl text-yellow-400">{{ appointments | selectattr('status', 'equalto', 'pending') | list | length }}</p>
+      <p class="text-xs text-gray-600 mt-1">Pending Viewings</p>
+    </div>
+  </div>
+
+  <!-- Property table -->
+  <div class="glass rounded-xl overflow-hidden mb-8">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gold/10">
+          <th class="text-left px-5 py-3.5 text-xs text-gray-600 uppercase tracking-wider">Property</th>
+          <th class="text-left px-5 py-3.5 text-xs text-gray-600 uppercase tracking-wider hidden md:table-cell">Location</th>
+          <th class="text-left px-5 py-3.5 text-xs text-gray-600 uppercase tracking-wider">Category</th>
+          <th class="text-left px-5 py-3.5 text-xs text-gray-600 uppercase tracking-wider hidden md:table-cell">Price</th>
+          <th class="text-left px-5 py-3.5 text-xs text-gray-600 uppercase tracking-wider">Status</th>
+          <th class="text-left px-5 py-3.5 text-xs text-gray-600 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in properties %}
+        <tr class="border-b border-gold/5 hover:bg-white/2 transition-colors">
+          <td class="px-5 py-4">
+            <p class="font-medium text-gray-200">{{ p.title }}</p>
+            <p class="text-xs text-gray-600 mt-0.5">#{{ p.id }}</p>
+          </td>
+          <td class="px-5 py-4 text-gray-400 text-xs hidden md:table-cell">{{ p.location }}</td>
+          <td class="px-5 py-4">
+            <span class="text-xs px-2.5 py-1 rounded-full badge-{{ p.category | lower }}">{{ p.category }}</span>
+          </td>
+          <td class="px-5 py-4 font-mono text-gold hidden md:table-cell">€{{ "{:,.0f}".format(p.price) }}</td>
+          <td class="px-5 py-4">
+            <span class="text-xs px-2 py-0.5 rounded-full
+              {%- if p.status == 'Available' %} bg-green-500/10 text-green-400
+              {%- elif p.status == 'Sold' %} bg-blue-500/10 text-blue-400
+              {%- else %} bg-red-500/10 text-red-400{% endif %}">
+              {{ p.status or 'Unknown' }}
+            </span>
+          </td>
+          <td class="px-5 py-4">
+            <div class="flex items-center gap-3">
+              <a href="/properties/{{ p.id }}" class="text-xs text-gray-500 hover:text-gold transition-colors">View</a>
+              <a href="/admin/properties/edit/{{ p.id }}" class="text-xs text-blue-400 hover:text-blue-300 transition-colors">Edit</a>
+              <form method="POST" action="{{ url_for('admin_property_delete', pid=p.id) }}"
+                    onsubmit="return confirm('Delete this property?');" class="inline">
+                <button class="text-xs text-red-500 hover:text-red-400 transition-colors">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Quick links -->
+  <div class="flex gap-4 mt-8">
+    <a href="/admin/inquiries" class="glass rounded-lg px-5 py-3 text-sm text-gray-400 hover:text-gold border border-gold/10 hover:border-gold/30 transition-all">
+      💬 View Inquiries
+    </a>
+    <a href="/admin/appointments" class="glass rounded-lg px-5 py-3 text-sm text-gray-400 hover:text-gold border border-gold/10 hover:border-gold/30 transition-all">
+      📅 Manage Viewings
+    </a>
+    <a href="/admin/users" class="glass rounded-lg px-5 py-3 text-sm text-gray-400 hover:text-gold border border-gold/10 hover:border-gold/30 transition-all">
+      👥 Manage Users
+    </a>
+  </div>
+</div>
+{% endblock %}

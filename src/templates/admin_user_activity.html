@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}User Activity — {{ target_user.username }}{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-16">
+  <div class="mb-10">
+    <a href="/admin/users" class="text-xs text-gray-600 hover:text-gold transition-colors">← Back to Users</a>
+    <p class="text-xs uppercase tracking-[0.3em] text-gold mb-2 mt-4">User Monitoring</p>
+    <h1 class="font-display text-4xl">{{ target_user.username }}'s Activity</h1>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Appointments -->
+    <div>
+      <h2 class="text-sm uppercase tracking-wider text-gray-500 mb-4 flex items-center gap-2">
+        📅 Appointments History
+      </h2>
+      <div class="space-y-3">
+        {% for appt in appointments %}
+        <div class="glass rounded-xl p-4 flex justify-between items-center">
+          <div>
+            <p class="text-sm font-medium">{{ appt.property_title }}</p>
+            <p class="text-[10px] text-gray-500 mt-1">
+              {{ appt.scheduled_at.strftime('%d %b %Y %H:%M') if appt.scheduled_at.strftime else appt.scheduled_at }}
+            </p>
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded-full uppercase font-semibold
+            {% if appt.status == 'confirmed' %}bg-green-500/10 text-green-400
+            {% elif appt.status == 'pending' %}bg-yellow-500/10 text-yellow-400
+            {% else %}bg-red-500/10 text-red-400{% endif %}">
+            {{ appt.status }}
+          </span>
+        </div>
+        {% else %}
+        <div class="glass rounded-xl p-8 text-center text-gray-600 text-sm">No appointments scheduled.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Favorites -->
+    <div>
+      <h2 class="text-sm uppercase tracking-wider text-gray-500 mb-4 flex items-center gap-2">
+        ⭐ Saved Favorites
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for fav in favorites %}
+        <div class="glass rounded-xl p-4 border border-white/5">
+          <p class="text-sm font-medium text-gray-200 mb-1">{{ fav.title }}</p>
+          <p class="text-xs text-gold font-mono">€{{ "{:,.0f}".format(fav.price) }}</p>
+          <a href="/properties/{{ fav.id }}" class="text-[10px] text-gray-500 hover:text-gold mt-3 block transition-colors">View Listing →</a>
+        </div>
+        {% else %}
+        <div class="col-span-2 glass rounded-xl p-8 text-center text-gray-600 text-sm">No favorites saved yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

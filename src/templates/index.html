@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}HomeFinder — Premium Real Estate Portal{% endblock %}
+
+{% block content %}
+
+<section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-10">
+
+  <div class="absolute inset-0 opacity-[0.03]"
+       style="background-image: radial-gradient(circle at 2px 2px, #C9A84C 1px, transparent 0); background-size: 40px 40px;"></div>
+  
+  <div class="absolute top-1/4 right-1/4 w-[800px] h-[800px] rounded-full blur-[120px] pointer-events-none"
+       style="background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, rgba(0,0,0,0) 70%);"></div>
+  <div class="absolute bottom-1/4 left-1/4 w-[600px] h-[600px] rounded-full blur-[100px] pointer-events-none"
+       style="background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0) 70%);"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-12 gap-16 items-center w-full">
+
+    <div class="lg:col-span-7 text-center lg:text-left z-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gold/20 bg-gold/5 backdrop-blur-md mb-8">
+        <span class="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
+        <span class="text-[10px] uppercase tracking-[0.3em] font-semibold text-gold">Premium Real Estate</span>
+      </div>
+      
+      <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[1.05] mb-8 text-white font-semibold tracking-tight">
+        Discover Your<br/>
+        <span class="text-gold-gradient italic pr-2">Dream Space.</span>
+      </h1>
+      
+      <p class="text-gray-400 text-lg sm:text-xl leading-relaxed mb-10 max-w-2xl mx-auto lg:mx-0 font-light">
+        Curated residential homes, executive commercial spaces, and premium rentals. 
+        Engineered with military-grade 2FA security and absolute privacy [GDPR Compliant].
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
+        <a href="/properties"
+           class="group relative overflow-hidden bg-gold text-obsidian px-8 py-4 rounded-lg font-semibold text-sm tracking-wide transition-all duration-300 hover:shadow-[0_0_30px_rgba(201,168,76,0.3)] hover:-translate-y-1 text-center">
+          <span class="relative z-10 flex items-center justify-center gap-2">
+            Explore Portfolio
+            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </span>
+        </a>
+        <a href="/register"
+           class="flex items-center justify-center px-8 py-4 rounded-lg text-sm tracking-wide font-medium border border-gold/30 text-gold transition-all duration-300 hover:bg-gold/10 hover:border-gold/60 text-center">
+          Create Account
+        </a>
+      </div>
+
+      <div class="flex flex-wrap gap-x-12 gap-y-6 mt-16 justify-center lg:justify-start border-t border-gold/10 pt-8">
+        {% for val, label in [('10k+', 'Active Listings'), ('3', 'Property Types'), ('AES-256', 'Encrypted Data')] %}
+        <div>
+          <p class="font-display text-4xl text-white mb-1">{{ val }}</p>
+          <p class="text-xs text-gold uppercase tracking-[0.15em] font-semibold">{{ label }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="lg:col-span-5 w-full max-w-lg mx-auto lg:mx-0 z-10">
+      <div class="glass rounded-2xl p-8 lg:p-10 shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-gold to-transparent opacity-50"></div>
+        
+        <div class="flex items-center gap-3 mb-8">
+          <div class="p-2 bg-gold/10 rounded-lg text-gold">🔍</div>
+          <h2 class="font-display text-2xl font-semibold">Quick Search</h2>
+        </div>
+
+        <form action="{{ url_for('properties') }}" method="GET" class="flex flex-col gap-5">
+          <div class="space-y-1.5">
+            <label class="text-[11px] text-gray-400 uppercase tracking-[0.2em] font-semibold ml-1">Property Type</label>
+            <select name="category" class="hf-input w-full rounded-xl px-4 py-3.5 text-sm appearance-none cursor-pointer">
+              <option value="">All Categories</option>
+              {% for cat in ['residential','commercial','rental'] %}
+              <option value="{{ cat }}">{{ cat|capitalize }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-[11px] text-gray-400 uppercase tracking-[0.2em] font-semibold ml-1">Location</label>
+            <input type="text" name="location" placeholder="e.g. Kolonaki, Athens..."
+                   class="hf-input w-full rounded-xl px-4 py-3.5 text-sm" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-[11px] text-gray-400 uppercase tracking-[0.2em] font-semibold ml-1">Min Price (€)</label>
+              <input type="number" name="min_price" placeholder="0"
+                     class="hf-input w-full rounded-xl px-4 py-3.5 text-sm" />
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-[11px] text-gray-400 uppercase tracking-[0.2em] font-semibold ml-1">Max Price (€)</label>
+              <input type="number" name="max_price" placeholder="No Limit"
+                     class="hf-input w-full rounded-xl px-4 py-3.5 text-sm" />
+            </div>
+          </div>
+
+          <button type="submit"
+                  class="mt-4 bg-gold text-obsidian w-full py-4 rounded-xl font-bold text-sm tracking-wide
+                         hover:bg-gold-light transition-all duration-300 shadow-lg shadow-gold/20 hover:shadow-gold/40">
+            Find Properties
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if properties %}
+<section class="relative max-w-7xl mx-auto px-6 py-24 border-t gold-divider">
+  <div class="flex flex-col md:flex-row items-start md:items-end justify-between mb-12 gap-6">
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-[1px] bg-gold"></div>
+        <p class="text-[10px] uppercase tracking-[0.3em] font-semibold text-gold">Handpicked Selection</p>
+      </div>
+      <h2 class="font-display text-4xl md:text-5xl font-semibold">Featured Listings</h2>
+    </div>
+    <a href="/properties" class="group flex items-center gap-2 text-sm font-medium text-gold hover:text-gold-light transition-colors">
+      View full portfolio 
+      <span class="group-hover:translate-x-1 transition-transform">→</span>
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% for prop in properties %}
+    <a href="/properties/{{ prop.id }}" class="prop-card glass rounded-2xl overflow-hidden block group flex flex-col h-full">
+
+      <div class="h-56 flex items-center justify-center relative overflow-hidden bg-obsidian-800">
+        <div class="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-transparent z-10 opacity-80"></div>
+        
+        <div class="absolute inset-0 opacity-20 group-hover:scale-110 transition-transform duration-700 ease-in-out bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-700 via-obsidian to-obsidian"></div>
+        
+        {% if prop.thumbnail and not prop.use_placeholder %}
+          <img src="{{ url_for('static', filename='uploads/properties/' + prop.thumbnail) }}" alt="{{ prop.title }}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+        {% elif prop.thumbnail == 'no-image-available.jpg' %}
+          <img src="{{ url_for('static', filename='no-image-available.jpg') }}" alt="No image available" class="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-700" />
+        {% else %}
+          <span class="text-6xl opacity-30 z-0 transform group-hover:scale-110 transition-transform duration-500">
+            {% if prop.category == 'commercial' %}🏢
+            {% elif prop.category == 'rental' %}🔑
+            {% else %}🏠{% endif %}
+          </span>
+        {% endif %}
+        
+        <div class="absolute top-4 left-4 z-20 flex gap-2">
+          <span class="text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md font-semibold badge-{{ prop.category }}">
+            {{ prop.category }}
+          </span>
+        </div>
+        <div class="absolute top-4 right-4 z-20">
+          <span class="text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-md font-semibold shadow-lg {% if prop.is_available %}status-available{% else %}status-unavail{% endif %}">
+            {% if prop.is_available %}Available{% else %}Reserved{% endif %}
+          </span>
+        </div>
+      </div>
+
+      <div class="p-6 flex flex-col flex-grow relative z-20 -mt-6 rounded-t-2xl bg-obsidian border-t border-white/5">
+        <p class="font-display text-xl font-semibold leading-snug mb-2 group-hover:text-gold transition-colors">{{ prop.title }}</p>
+        <div class="flex items-center gap-1.5 text-sm text-gray-400 mb-6 font-light">
+          <svg class="w-4 h-4 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          {{ prop.location }}
+        </div>
+        
+        <div class="mt-auto flex items-end justify-between pt-4 border-t border-gold/10">
+          <div>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Asking Price</p>
+            <span class="text-gold font-bold text-2xl font-mono tracking-tight">
+              €{{ "{:,.0f}".format(prop.price) }}
+              {% if prop.category == 'rental' %}<span class="text-sm text-gray-500 font-sans font-normal">/mo</span>{% endif %}
+            </span>
+          </div>
+          {% if prop.bedrooms %}
+          <div class="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 text-gray-300 text-sm">
+            <span>🛏</span>
+            <span class="font-medium">{{ prop.bedrooms }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="py-24 relative overflow-hidden bg-obsidian-900 border-t border-b border-gold/10">
+  <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gold/5 blur-[120px] rounded-full pointer-events-none"></div>
+
+  <div class="max-w-7xl mx-auto px-6 relative z-10">
+    <div class="text-center mb-16">
+      <h2 class="font-display text-3xl md:text-4xl font-semibold mb-4">Enterprise-Grade Infrastructure</h2>
+      <p class="text-gray-400 max-w-2xl mx-auto">Built on robust software engineering principles for uncompromising security and reliability.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 lg:gap-12">
+      {% set features = [
+        ('🔐', 'Military-Grade Security', 'Two-Factor Authentication (TOTP) via email within 30s. Single-session enforcement and RFC 6238 compliant flows.'),
+        ('🛡️', 'Privacy by Design', 'Fully GDPR Compliant. All PII (Email, Phone) secured using AES-256-GCM encryption with strict right-to-erasure.'),
+        ('🏛️', 'Polymorphic Architecture', 'Implementing robust Strategy & Factory Design Patterns to seamlessly manage Residential, Commercial, and Rental entities.'),
+      ] %}
+      {% for icon, title, desc in features %}
+      <div class="glass p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-500">
+        <div class="w-16 h-16 rounded-xl mb-6 flex items-center justify-center text-3xl bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 shadow-inner">
+          {{ icon }}
+        </div>
+        <h3 class="font-display text-xl font-semibold mb-3 text-white">{{ title }}</h3>
+        <p class="text-sm text-gray-400 leading-relaxed">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}
